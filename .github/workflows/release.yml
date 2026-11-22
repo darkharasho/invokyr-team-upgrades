@@ -27,7 +27,8 @@ jobs:
             exit 1
           fi
           echo "VERSION=$version" >> "$GITHUB_ENV"
-          echo "ZIP=dist/darkharasho-$name-$version.zip" >> "$GITHUB_ENV"
+          # Not ZIP: Info-ZIP reads $ZIP as extra command-line options.
+          echo "PACKAGE_ZIP=dist/darkharasho-$name-$version.zip" >> "$GITHUB_ENV"
           case "$GITHUB_REF_NAME" in
             *-*) echo "PRERELEASE=true" >> "$GITHUB_ENV" ;;
             *) echo "PRERELEASE=false" >> "$GITHUB_ENV" ;;
@@ -42,7 +43,7 @@ jobs:
           awk -v v="## $VERSION" '$0 == v {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
           cat >> notes.md <<EOF2
 
-          For Invokyr. Download \`$(basename "$ZIP")\` below and install it with HML or another mod manager (it's a Thunderstore-style package), or put \`plugins/*.dll\` in \`BepInEx/plugins\`. Requires BepInEx 6 for IL2CPP.
+          For Invokyr. Download \`$(basename "$PACKAGE_ZIP")\` below and install it with HML or another mod manager (it's a Thunderstore-style package), or put the DLL in \`BepInEx/plugins\`. Requires BepInEx 6 for IL2CPP.
           EOF2
 
       - name: Create or update GitHub release
@@ -50,10 +51,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" "$ZIP" --clobber
+            gh release upload "$GITHUB_REF_NAME" "$PACKAGE_ZIP" --clobber
             gh release edit "$GITHUB_REF_NAME" --draft=false
           else
-            gh release create "$GITHUB_REF_NAME" "$ZIP" --title "${GITHUB_REF_NAME#v}" --notes-file notes.md --prerelease=$PRERELEASE
+            gh release create "$GITHUB_REF_NAME" "$PACKAGE_ZIP" --title "${GITHUB_REF_NAME#v}" --notes-file notes.md --prerelease=$PRERELEASE
           fi
 
       # Thunderstore has no Invokyr community yet: the slug is a placeholder, so this step may fail without failing
@@ -63,7 +64,7 @@ jobs:
         continue-on-error: true
         env:
           THUNDERSTORE_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
-        run: scripts/thunderstore-publish.sh "$ZIP" --community invokyr --categories mods
+        run: scripts/thunderstore-publish.sh "$PACKAGE_ZIP" --community invokyr --categories mods
 
       - uses: actions/upload-artifact@v4
         with:
