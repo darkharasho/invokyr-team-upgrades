@@ -1,0 +1,16 @@
+{
+  "$schema": "https://hml-share.project96.workers.dev/v1/catalog/schema.json",
+  "schema": 1,
+  "mods": [
+    {
+      "id": "team-upgrades",
+      "name": "InvokyrTeamUpgrades",
+      "description": "Upgrades one player buys in Invokyr go to the whole team, with a per-upgrade choice and a catch-up when a save loads. Only the host needs it.",
+      "games": [
+        "nexus-invokyr"
+      ],
+      "icon": "thunderstore/icon.png",
+      "readme": "thunderstore/README.md"
+    }
+  ]
+}
