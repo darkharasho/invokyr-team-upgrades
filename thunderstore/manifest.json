@@ -1,0 +1,7 @@
+{
+    "name": "InvokyrTeamUpgrades",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/darkharasho/invokyr-team-upgrades",
+    "description": "Upgrades one player buys in Invokyr go to the whole team, with a per-upgrade choice and a catch-up when a save loads. Only the host needs it.",
+    "dependencies": []
+}

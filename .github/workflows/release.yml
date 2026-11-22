@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Check tag matches manifest version
+        run: |
+          version="$(jq -r .version_number thunderstore/manifest.json)"
+          name="$(jq -r .name thunderstore/manifest.json)"
+          # A suffixed tag (v1.2.3-beta.1) is a GitHub-only prerelease.
+          if [ "v$version" != "${GITHUB_REF_NAME%%-*}" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest version $version"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "ZIP=dist/darkharasho-$name-$version.zip" >> "$GITHUB_ENV"
+          case "$GITHUB_REF_NAME" in
+            *-*) echo "PRERELEASE=true" >> "$GITHUB_ENV" ;;
+            *) echo "PRERELEASE=false" >> "$GITHUB_ENV" ;;
+          esac
+
+      # The game isn't installed here, so the build uses the reference assemblies in lib/refs.
+      - name: Build and package
+        run: scripts/package.sh
+
+      - name: Release notes from changelog
+        run: |
+          awk -v v="## $VERSION" '$0 == v {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          cat >> notes.md <<EOF2
+
+          For Invokyr. Download \`$(basename "$ZIP")\` below and install it with HML or another mod manager (it's a Thunderstore-style package), or put \`plugins/*.dll\` in \`BepInEx/plugins\`. Requires BepInEx 6 for IL2CPP.
+          EOF2
+
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$ZIP" --clobber
+            gh release edit "$GITHUB_REF_NAME" --draft=false
+          else
+            gh release create "$GITHUB_REF_NAME" "$ZIP" --title "${GITHUB_REF_NAME#v}" --notes-file notes.md --prerelease=$PRERELEASE
+          fi
+
+      # Thunderstore has no Invokyr community yet: the slug is a placeholder, so this step may fail without failing
+      # the release. Set the real slug once the community exists and drop continue-on-error.
+      - name: Publish to Thunderstore
+        if: env.PRERELEASE == 'false'
+        continue-on-error: true
+        env:
+          THUNDERSTORE_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
+        run: scripts/thunderstore-publish.sh "$ZIP" --community invokyr --categories mods
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ env.VERSION }}
+          path: dist/*.zip

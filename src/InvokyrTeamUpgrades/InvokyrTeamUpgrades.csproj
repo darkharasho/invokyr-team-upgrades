@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>InvokyrTeamUpgrades</AssemblyName>
+    <RootNamespace>InvokyrTeamUpgrades</RootNamespace>
+    <Version>1.0.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DebugType>embedded</DebugType>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+  </PropertyGroup>
+
+  <!-- Machine-specific paths. Override in Local.props (gitignored) or with -p:InteropPath=... -->
+  <Import Project="$(MSBuildThisFileDirectory)../../Local.props" Condition="Exists('$(MSBuildThisFileDirectory)../../Local.props')" />
+
+  <!-- Invokyr is IL2CPP: build against the interop assemblies BepInEx 6 generates on launch (copied out of the game's
+       BepInEx/interop by scripts/update-refs.sh) and the BepInEx core. Without them (CI), lib/refs is used. -->
+  <PropertyGroup>
+    <InteropPath Condition="'$(InteropPath)' == ''">$(HOME)/.cache/invokyr/interop</InteropPath>
+    <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(HOME)/.cache/invokyr/core</BepInExCorePath>
+    <RefsPath>$(MSBuildThisFileDirectory)../../lib/refs</RefsPath>
+    <BepInExCorePath Condition="!Exists('$(BepInExCorePath)/BepInEx.Unity.IL2CPP.dll')">$(RefsPath)</BepInExCorePath>
+    <InteropPath Condition="!Exists('$(InteropPath)/vhs.dll')">$(RefsPath)</InteropPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx.Core" HintPath="$(BepInExCorePath)/BepInEx.Core.dll" Private="false" />
+    <Reference Include="BepInEx.Unity.IL2CPP" HintPath="$(BepInExCorePath)/BepInEx.Unity.IL2CPP.dll" Private="false" />
+    <Reference Include="BepInEx.Unity.Common" HintPath="$(BepInExCorePath)/BepInEx.Unity.Common.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(BepInExCorePath)/0Harmony.dll" Private="false" />
+    <Reference Include="Il2CppInterop.Runtime" HintPath="$(BepInExCorePath)/Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="Il2CppInterop.Common" HintPath="$(BepInExCorePath)/Il2CppInterop.Common.dll" Private="false" />
+    <Reference Include="Il2Cppmscorlib" HintPath="$(InteropPath)/Il2Cppmscorlib.dll" Private="false" />
+    <Reference Include="vhs" HintPath="$(InteropPath)/vhs.dll" Private="false" />
+    <Reference Include="Mirror" HintPath="$(InteropPath)/Mirror.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(InteropPath)/UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.IMGUIModule" HintPath="$(InteropPath)/UnityEngine.IMGUIModule.dll" Private="false" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(InteropPath)/UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(InteropPath)/UnityEngine.UI.dll" Private="false" />
+    <Reference Include="Unity.InputSystem" HintPath="$(InteropPath)/Unity.InputSystem.dll" Private="false" />
+  </ItemGroup>
+
+</Project>
