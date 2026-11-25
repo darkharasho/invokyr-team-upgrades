@@ -12,7 +12,7 @@ namespace InvokyrTeamUpgrades
     {
         public const string PluginGuid = "com.darkharasho.invokyr.teamupgrades";
         public const string PluginName = "InvokyrTeamUpgrades";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.0.1";
 
         /// <summary>The game's upgrades as of writing, so they're in the config file before the first game.</summary>
         private static readonly string[] KnownUpgrades = { "up_health", "up_stamina", "up_speed", "up_inventory", "up_doublejump" };
