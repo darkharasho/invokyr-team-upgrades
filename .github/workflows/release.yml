@@ -57,14 +57,6 @@ jobs:
             gh release create "$GITHUB_REF_NAME" "$PACKAGE_ZIP" --title "${GITHUB_REF_NAME#v}" --notes-file notes.md --prerelease=$PRERELEASE
           fi
 
-      # Thunderstore has no Invokyr community yet: the slug is a placeholder, so this step may fail without failing
-      # the release. Set the real slug once the community exists and drop continue-on-error.
-      - name: Publish to Thunderstore
-        if: env.PRERELEASE == 'false'
-        continue-on-error: true
-        env:
-          THUNDERSTORE_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
-        run: scripts/thunderstore-publish.sh "$PACKAGE_ZIP" --community invokyr --categories mods
 
       - uses: actions/upload-artifact@v4
         with:
