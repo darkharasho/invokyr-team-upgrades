@@ -9,6 +9,9 @@
       "games": [
         "nexus-invokyr"
       ],
+      "dependencies": [
+        "nexus:invokyr/6/13"
+      ],
       "icon": "thunderstore/icon.png",
       "readme": "thunderstore/README.md"
     }
